@@ -1,14 +1,7 @@
 ---
 title: Responsive Navigation
 description: Our three Menu patterns form like Voltron into one responsive Menu plugin, which allows you to switch between patterns at different screen sizes.
-js:
-  - ./js/foundation.responsiveMenu.js
-  - ./js/foundation.responsiveToggle.js
 ---
-
-<div class="callout alert">
-  <p>These patterns haven't been finalized yet, but we're collecting feedback on GitHub about them.</p>
-</div>
 
 ## Responsive Menu
 

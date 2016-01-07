@@ -1,8 +1,8 @@
-# [Foundation for Sites](http://foundation.zurb.com) (Public Beta)
+# [Foundation for Sites](http://foundation.zurb.com) (v6.1)
 
-This is the in-development version of Foundation for Sites 6.0. 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zurb/foundation-sites?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zurb/foundation-sites-6?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+Foundation is the most advanced responsive front-end framework in the world. Quickly go from prototype to production, building sites or apps that work on any kind of device with Foundation. Includes layout constructs, like a fully customizable, responsive grid, commonly used JavaScript plugins, and full A11Y support.
 
 ## Requirements
 
@@ -12,40 +12,40 @@ The Sass is compiled using libsass, which requires the GCC to be installed on yo
 
 ## Setup
 
-```bash
-git clone https://github.com/zurb/foundation-sites-6.git
-cd foundation-sites-6
+To get going with Foundation you can:
+
+
+  * [Install Yeti Launch](http://foundation.zurb.com/develop/yeti-launch.html): Seriously though, check it out!
+  * [Install the CLI](https://www.npmjs.com/package/foundation-cli): `npm install -g foundation-cli`
+  * [Download the latest release](http://foundation.zurb.com/sites/download.html)
+  * [Install with Bower](http://bower.io): `bower install foundation-sites`
+  * [Install with npm](http://npmjs.com): `npm install foundation-sites`
+  * [Install with Atmosphere for Meteor](https://atmospherejs.com): `meteor add zurb:foundation-sites`
+  * [Install with Composer](https://getcomposer.org/): `php composer.phar require zurb/foundation`
+
+## Documentation
+
+Foundation uses [Gulp](http://gulpjs.com/) and [SuperCollider](https://www.npmjs.com/package/supercollider) to generate its [documentation pages](http://foundation.zurb.com/sites/docs). Documentation can also be run from your local computer:
+
+### View documentation locally
+
+You'll want to clone the Foundation repo first and install all the dependencies. You can do this using the following commands:
+
+```
+git clone git@github.com:zurb/foundation-sites.git
+cd foundation-sites
 npm install
-npm start
 ```
 
-## Local Testing
+Then just run `npm start` and the documentation will be compiled. It will also launch an instance of [BrowserSync](http://www.browsersync.io/) and open a tab in your default browser.
+The file structure:
 
-`npm start` will compile the documentation. For this testing period, we've created a small testbed to experiment with components. You can find the assets under the `testing/` folder. To use the testbed, run `npm run testbed` after installing the needed dependencies.
+```
+foundation/
+├── dist/
+│   └── ...
+├── docs/
+│   └── ...
+```
 
-## Folder structure
-
-- `_build/`: compiled HTML, CSS, and JavaScript. *Don't edit these files directly, as they will be overwritten!*
-- `config/`: configuration files for our linters.
-- `dist/`: compiled CSS and JavaScript files for the current release.
-- `docs/`: documentation source.
-  - `layouts/default.html`: base HTML template for every docs page.
-  - `layouts/component.html`: Handlebars template for component documentation.
-  - `pages/*.html`: basic documentation pages.
-  - `pages/*.md`: fancy documentation pages for components, which are parsed through [Supercollider](https://github.com/gakimball/supercollider).
-  - `partials/`: Handlebars partials go here.
-  - `assets/`: docs-specific images, styles, and scripts go here.
-- `js/`: the Foundation 5 JavaScript.
-  - New components are inside this folder.
-  - Old components are in `js/foundation/`.
-- `scss/`: the Sass.
-  - `scss/components`: new UI components go here.
-  - `scss/components_old`: Foundation 5 components stay here.
-  - `scss/forms`: form styles.
-  - `scss/grid`: the new grid.
-  - `scss/typography`: typography.
-  - `scss/util`: helper functions and mixins.
-  - `scss/vendor`: third-party libraries.
-  - `_global.scss`: global variables and styles.
-- `docs_old/`: Foundation 5 documentation.
-- `spec/`: Foundation 5 unit tests.
+Copyright (c) 2015 ZURB, inc.

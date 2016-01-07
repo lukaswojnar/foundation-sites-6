@@ -1,43 +1,55 @@
+var cacheBust = require('gulp-cache-bust');
+var foundationDocs = require('foundation-docs');
 var gulp = require('gulp');
-var cached = require('gulp-cached');
-var supercollider = require('supercollider');
-var filter = require('gulp-filter');
-var buildSearch = require('../lib/buildSearch');
+var newer = require('gulp-newer');
 var panini = require('panini');
+var supercollider = require('supercollider');
+
+var PANINI_CONFIG = {
+  root: 'docs/pages/',
+  layouts: 'docs/layout/',
+  partials: 'docs/partials/',
+  helpers: foundationDocs.handlebarsHelpers
+}
 
 supercollider
   .config({
-    template: 'docs/layout/component.html',
-    marked: require('../lib/marked'),
-    handlebars: require('../lib/handlebars')
+    template: foundationDocs.componentTemplate,
+    marked: foundationDocs.marked,
+    handlebars: foundationDocs.handlebars,
+    keepFm: true
   })
   .adapter('sass')
   .adapter('js');
 
 // Assembles the layout, pages, and partials in the docs folder
 gulp.task('docs', function() {
-  var mdFilter = filter(['*.md']);
+  return gulp.src('docs/pages/**/*')
+    .pipe(newer({
+      dest: '_build',
+      ext: '.html'
+    }))
+    .pipe(supercollider.init())
+    .pipe(panini(PANINI_CONFIG))
+    .pipe(cacheBust())
+    .pipe(gulp.dest('_build'))
+    .on('finish', buildSearch);
+});
+
+gulp.task('docs:all', function() {
+  panini.refresh();
 
   return gulp.src('docs/pages/**/*')
-    .pipe(cached('docs'))
-    .pipe(mdFilter)
-      .pipe(supercollider.init())
-    .pipe(mdFilter.restore())
-    .pipe(panini({
-      layouts: 'docs/layout/',
-      partials: 'docs/partials/*.html'
-    }))
-    .pipe(gulp.dest('_build'));
+    .pipe(supercollider.init())
+    .pipe(panini(PANINI_CONFIG))
+    .pipe(cacheBust())
+    .pipe(gulp.dest('_build'))
+    .on('finish', buildSearch);
 });
 
-gulp.task('docs:reset', function() {
-  delete cached.caches['docs'];
-  gulp.run('docs');
-});
-
-gulp.task('docs:search', ['docs'], function(cb) {
-  buildSearch(supercollider.tree, cb);
-});
+function buildSearch() {
+  foundationDocs.buildSearch(supercollider.tree);
+}
 
 gulp.task('docs:debug', ['docs'], function(cb) {
   var output = JSON.stringify(supercollider.tree, null, '  ');

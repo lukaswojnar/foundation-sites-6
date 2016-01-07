@@ -2,6 +2,7 @@
  * Interchange module.
  * @module foundation.interchange
  * @requires foundation.util.mediaQuery
+ * @requires foundation.util.timerAndImageLoader
  */
 !function(Foundation, $) {
   'use strict';
@@ -22,26 +23,25 @@
     this._init();
     this._events();
 
-    Foundation.registerPlugin(this);
-    // /**
-    //  * Fires when the plugin has been successfuly initialized.
-    //  * @event Interchange#init
-    //  */
-    // this.$element.trigger('init.zf.interchange');
+    Foundation.registerPlugin(this, 'Interchange');
   }
 
   /**
    * Default settings for plugin
    */
   Interchange.defaults = {
+    /**
+     * Rules to be applied to Interchange elements. Set with the `data-interchange` array notation.
+     * @option
+     */
     rules: null
-  }
+  };
 
   Interchange.SPECIAL_QUERIES = {
     'landscape': 'screen and (orientation: landscape)',
     'portrait': 'screen and (orientation: portrait)',
     'retina': 'only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min--moz-device-pixel-ratio: 2), only screen and (-o-min-device-pixel-ratio: 2/1), only screen and (min-device-pixel-ratio: 2), only screen and (min-resolution: 192dpi), only screen and (min-resolution: 2dppx)'
-  }
+  };
 
   /**
    * Initializes the Interchange plugin and calls functions to get interchange functioning on load.
@@ -52,7 +52,7 @@
     this._addBreakpoints();
     this._generateRules();
     this._reflow();
-  }
+  };
 
   /**
    * Initializes events for Interchange.
@@ -60,8 +60,8 @@
    * @private
    */
   Interchange.prototype._events = function() {
-    $(window).on('resize.fndtn.interchange', Foundation.util.throttle(this._reflow.bind(this), 50));
-  }
+    $(window).on('resize.zf.interchange', Foundation.util.throttle(this._reflow.bind(this), 50));
+  };
 
   /**
    * Calls necessary functions to update Interchange upon DOM change
@@ -83,7 +83,7 @@
     if (match) {
       this.replace(match.path);
     }
-  }
+  };
 
   /**
    * Gets the Foundation breakpoints and adds them to the Interchange.SPECIAL_QUERIES object.
@@ -95,7 +95,7 @@
       var query = Foundation.MediaQuery.queries[i];
       Interchange.SPECIAL_QUERIES[query.name] = query.value;
     }
-  }
+  };
 
   /**
    * Checks the Interchange element for the provided media query + content pairings
@@ -131,7 +131,7 @@
     }
 
     this.rules = rulesList;
-  }
+  };
 
   /**
    * Update the `src` property of an image, or change the HTML of a container, to the specified path.
@@ -147,7 +147,6 @@
     // Replacing images
     if (this.$element[0].nodeName === 'IMG') {
       this.$element.attr('src', path).load(function() {
-        _this.$element.trigger('replaced.zf.interchange');
         _this.currentPath = path;
       });
     }
@@ -159,13 +158,20 @@
     else {
       $.get(path, function(response) {
         _this.$element.html(response);
-        _this.$element.trigger('replaced.zf.interchange');
+        $(response).foundation();
         _this.currentPath = path;
       });
     }
-  }
-
-  Foundation.plugin(Interchange);
+    this.$element.trigger('replaced.zf.interchange');
+  };
+  /**
+   * Destroys an instance of interchange.
+   * @function
+   */
+  Interchange.prototype.destroy = function(){
+    //TODO this.
+  };
+  Foundation.plugin(Interchange, 'Interchange');
 
   // Exports for AMD/Browserify
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')

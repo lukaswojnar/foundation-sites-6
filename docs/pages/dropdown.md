@@ -5,13 +5,6 @@ sass: scss/components/_dropdown.scss
 js: js/foundation.dropdown.js
 ---
 
-<div class="alert callout">
-  <h5>Known Issues</h5>
-  <ul>
-    <li>Sometimes has sizing issues on open.</li>
-  </ul>
-</div>
-
 <div class="primary callout">
   <p>You might be looking for <a href="dropdown-menu.html">dropdown menus</a>, which are a separate plugin.</p>
 </div>
@@ -24,8 +17,27 @@ To create the dropdown trigger, add `data-toggle` to a `<button>`. The value of 
 
 ```html_example
 <button class="button" type="button" data-toggle="example-dropdown">Toggle Dropdown</button>
+<div class="dropdown-pane" id="example-dropdown" data-dropdown data-auto-focus="true">
+  Example form in a dropdown.
+  <form>
+    <div class="row">
+      <div class="medium-6 columns">
+        <label>Name
+          <input type="text" placeholder="Kirk, James T.">
+        </label>
+      </div>
+      <div class="medium-6 columns">
+        <label>Rank
+          <input type="text" placeholder="Captain">
+        </label>
+      </div>
+    </div>
+  </form>
+</div>
 
-<div class="dropdown-pane" id="example-dropdown" data-dropdown>
+
+<button class="button" type="button" data-toggle="example-dropdown-1">Hoverable Dropdown</button>
+<div class="dropdown-pane" id="example-dropdown-1" data-dropdown data-hover="true">
   Just some junk that needs to be said. Or not. Your choice.
 </div>
 ```

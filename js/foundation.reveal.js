@@ -2,9 +2,10 @@
  * Reveal module.
  * @module foundation.reveal
  * @requires foundation.util.keyboard
- * @requires foundation.util.size-and-collision
+ * @requires foundation.util.box
  * @requires foundation.util.triggers
  * @requires foundation.util.mediaQuery
+ * @requires foundation.util.motion if using animations
  */
 !function(Foundation, $) {
   'use strict';
@@ -12,7 +13,6 @@
   /**
    * Creates a new instance of Reveal.
    * @class
-   * @fires Reveal#init
    * @param {jQuery} element - jQuery object to use for the modal.
    * @param {Object} options - optional parameters.
    */
@@ -22,7 +22,7 @@
     this.options = $.extend({}, Reveal.defaults, this.$element.data(), options);
     this._init();
 
-    Foundation.registerPlugin(this);
+    Foundation.registerPlugin(this, 'Reveal');
     Foundation.Keyboard.register('Reveal', {
       'ENTER': 'open',
       'SPACE': 'open',
@@ -30,26 +30,87 @@
       'TAB': 'tab_forward',
       'SHIFT_TAB': 'tab_backward'
     });
-    // /**
-    //  * Fires when the plugin has been successfuly initialized.
-    //  * @event Reveal#init
-    //  */
-    // this.$element.trigger('init.zf.reveal');
   }
 
   Reveal.defaults = {
+    /**
+     * Motion-UI class to use for animated elements. If none used, defaults to simple show/hide.
+     * @option
+     * @example 'slide-in-left'
+     */
     animationIn: '',
+    /**
+     * Motion-UI class to use for animated elements. If none used, defaults to simple show/hide.
+     * @option
+     * @example 'slide-out-right'
+     */
     animationOut: '',
+    /**
+     * Time, in ms, to delay the opening of a modal after a click if no animation used.
+     * @option
+     * @example 10
+     */
     showDelay: 0,
+    /**
+     * Time, in ms, to delay the closing of a modal after a click if no animation used.
+     * @option
+     * @example 10
+     */
     hideDelay: 0,
+    /**
+     * Allows a click on the body/overlay to close the modal.
+     * @option
+     * @example true
+     */
     closeOnClick: true,
+    /**
+     * Allows the modal to close if the user presses the `ESCAPE` key.
+     * @option
+     * @example true
+     */
     closeOnEsc: true,
+    /**
+     * If true, allows multiple modals to be displayed at once.
+     * @option
+     * @example false
+     */
     multipleOpened: false,
+    /**
+     * Distance, in pixels, the modal should push down from the top of the screen.
+     * @option
+     * @example 100
+     */
     vOffset: 100,
+    /**
+     * Distance, in pixels, the modal should push in from the side of the screen.
+     * @option
+     * @example 0
+     */
     hOffset: 0,
+    /**
+     * Allows the modal to be fullscreen, completely blocking out the rest of the view. JS checks for this as well.
+     * @option
+     * @example false
+     */
     fullScreen: false,
+    /**
+     * Percentage of screen height the modal should push up from the bottom of the view.
+     * @option
+     * @example 10
+     */
     btmOffsetPct: 10,
-    overlay: true
+    /**
+     * Allows the modal to generate an overlay div, which will cover the view when modal opens.
+     * @option
+     * @example true
+     */
+    overlay: true,
+    /**
+     * Allows the modal to remove and reinject markup on close. Should be true if using video elements w/o using provider's api.
+     * @option
+     * @example false
+     */
+    resetOnClose: false
   };
 
   /**
@@ -79,7 +140,7 @@
       this.options.fullScreen = true;
       this.options.overlay = false;
     }
-    if(this.options.overlay){
+    if(this.options.overlay && !this.$overlay){
       this.$overlay = this._makeOverlay(this.id);
     }
 
@@ -118,8 +179,8 @@
     var _this = this;
 
     this.$element.on({
-      'open.zf.trigger': this._open.bind(this),
-      'close.zf.trigger': this._close.bind(this),
+      'open.zf.trigger': this.open.bind(this),
+      'close.zf.trigger': this.close.bind(this),
       'toggle.zf.trigger': this.toggle.bind(this),
       'resizeme.zf.trigger': function(){
         if(_this.$element.is(':visible')){
@@ -133,14 +194,14 @@
         if(e.which === 13 || e.which === 32){
           e.stopPropagation();
           e.preventDefault();
-          _this._open();
+          _this.open();
         }
       });
     }
 
 
     if(this.options.closeOnClick && this.options.overlay){
-      this.$overlay.off('.zf.reveal').on('click.zf.reveal', this._close.bind(this));
+      this.$overlay.off('.zf.reveal').on('click.zf.reveal', this.close.bind(this));
     }
   };
   /**
@@ -149,25 +210,24 @@
    * @private
    */
   Reveal.prototype._setPosition = function(cb){
-    var eleDims = Foundation.GetDimensions(this.$element);
+    var eleDims = Foundation.Box.GetDimensions(this.$element);
     var elePos = this.options.fullScreen ? 'reveal full' : (eleDims.height >= (0.5 * eleDims.windowDims.height)) ? 'reveal' : 'center';
 
     if(elePos === 'reveal full'){
-      console.log('full');
       //set to full height/width
       this.$element
-          .offset(Foundation.GetOffsets(this.$element, null, elePos, this.options.vOffset))
+          .offset(Foundation.Box.GetOffsets(this.$element, null, elePos, this.options.vOffset))
           .css({
             'height': eleDims.windowDims.height,
             'width': eleDims.windowDims.width
           });
-    }else if(!Foundation.MediaQuery.atLeast('medium') || !Foundation.ImNotTouchingYou(this.$element, null, true, false)){
+    }else if(!Foundation.MediaQuery.atLeast('medium') || !Foundation.Box.ImNotTouchingYou(this.$element, null, true, false)){
       //if smaller than medium, resize to 100% width minus any custom L/R margin
       this.$element
           .css({
             'width': eleDims.windowDims.width - (this.options.hOffset * 2)
           })
-          .offset(Foundation.GetOffsets(this.$element, null, 'center', this.options.vOffset, this.options.hOffset));
+          .offset(Foundation.Box.GetOffsets(this.$element, null, 'center', this.options.vOffset, this.options.hOffset));
       //flag a boolean so we can reset the size after the element is closed.
       this.changedSize = true;
     }else{
@@ -176,7 +236,7 @@
             'max-height': eleDims.windowDims.height - (this.options.vOffset * (this.options.btmOffsetPct / 100 + 1)),
             'width': ''
           })
-          .offset(Foundation.GetOffsets(this.$element, null, elePos, this.options.vOffset));
+          .offset(Foundation.Box.GetOffsets(this.$element, null, elePos, this.options.vOffset));
           //the max height based on a percentage of vertical offset plus vertical offset
     }
 
@@ -185,10 +245,11 @@
 
   /**
    * Opens the modal controlled by `this.$anchor`, and closes all others by default.
-   * @fires Reveal#closeAll
+   * @function
+   * @fires Reveal#closeme
    * @fires Reveal#open
    */
-  Reveal.prototype._open = function(){
+  Reveal.prototype.open = function(){
     var _this = this;
     this.isActive = true;
     //make element invisible, but remove display: none so we can get size and positioning
@@ -204,7 +265,7 @@
         /**
          * Fires immediately before the modal opens.
          * Closes any other modals that are currently open
-         * @event Reveal#closeAll
+         * @event Reveal#closeme
          */
         _this.$element.trigger('closeme.zf.reveal', _this.id);
       }
@@ -212,10 +273,12 @@
         if(_this.options.overlay){
           Foundation.Motion.animateIn(_this.$overlay, 'fade-in', function(){
             Foundation.Motion.animateIn(_this.$element, _this.options.animationIn, function(){
+              _this.focusableElements = Foundation.Keyboard.findFocusable(_this.$element);
             });
           });
         }else{
           Foundation.Motion.animateIn(_this.$element, _this.options.animationIn, function(){
+            _this.focusableElements = Foundation.Keyboard.findFocusable(_this.$element);
           });
         }
       }else{
@@ -254,69 +317,73 @@
    */
   Reveal.prototype._extraHandlers = function(){
     var _this = this;
-    var visibleFocusableElements = this.$element.find('a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, *[tabindex], *[contenteditable]').filter(function() {
-      if (!$(this).is(':visible') || $(this).attr('tabindex') < 0){ return false; }//only have visible elements and those that have a tabindex greater or equal 0
-      return true;
-    });
+    this.focusableElements = Foundation.Keyboard.findFocusable(this.$element);
 
     if(!this.options.overlay && this.options.closeOnClick && !this.options.fullScreen){
       $('body').on('click.zf.reveal', function(e){
         // if()
-          _this._close();
+          _this.close();
       });
     }
     if(this.options.closeOnEsc){
       $(window).on('keydown.zf.reveal', function(e){
-        if (visibleFocusableElements.length === 0) { // no focusable elements inside the modal at all, prevent tabbing in general
-          e.preventDefault();
-        }
-        Foundation.Keyboard.handleKey(e, _this, {
+        Foundation.Keyboard.handleKey(e, 'Reveal', {
           close: function() {
-            if (this.options.closeOnEsc) {
-              this._close();
+            if (_this.options.closeOnEsc) {
+              _this.close();
+              _this.$anchor.focus();
             }
           }
         });
+        if (_this.focusableElements.length === 0) { // no focusable elements inside the modal at all, prevent tabbing in general
+          e.preventDefault();
+        }
       });
     }
 
     // lock focus within modal while tabbing
     this.$element.on('keydown.zf.reveal', function(e) {
+      var $target = $(this);
       // handle keyboard event with keyboard util
-      Foundation.Keyboard.handleKey(e, _this, {
+      Foundation.Keyboard.handleKey(e, 'Reveal', {
         tab_forward: function() {
-          if (this.$element.find(':focus').is(visibleFocusableElements.eq(-1))) { // left modal downwards, setting focus to first element
-            visibleFocusableElements.eq(0).focus();
+          if (_this.$element.find(':focus').is(_this.focusableElements.eq(-1))) { // left modal downwards, setting focus to first element
+            _this.focusableElements.eq(0).focus();
             e.preventDefault();
           }
         },
         tab_backward: function() {
-          if (this.$element.find(':focus').is(visibleFocusableElements.eq(0)) || this.$element.is(':focus')) { // left modal upwards, setting focus to last element
-            visibleFocusableElements.eq(-1).focus();
+          if (_this.$element.find(':focus').is(_this.focusableElements.eq(0)) || _this.$element.is(':focus')) { // left modal upwards, setting focus to last element
+            _this.focusableElements.eq(-1).focus();
             e.preventDefault();
           }
         },
         open: function() {
-          this._open();
+          if (_this.$element.find(':focus').is(_this.$element.find('[data-close]'))) {
+            setTimeout(function() { // set focus back to anchor if close button has been activated
+              _this.$anchor.focus();
+            }, 1);
+          } else if ($target.is(_this.focusableElements)) { // dont't trigger if acual element has focus (i.e. inputs, links, ...)
+            _this.open();
+          }
         },
         close: function() {
-          if (this.options.closeOnEsc) {
-            this._close();
+          if (_this.options.closeOnEsc) {
+            _this.close();
+            _this.$anchor.focus();
           }
         }
       });
-      if (visibleFocusableElements.length === 0) { // no focusable elements inside the modal at all, prevent tabbing in general
-        e.preventDefault();
-      }
     });
 
   };
 
   /**
-   * Closes the modal
+   * Closes the modal.
+   * @function
    * @fires Reveal#closed
    */
-  Reveal.prototype._close = function(){
+  Reveal.prototype.close = function(){
     if(!this.isActive || !this.$element.is(':visible')){
       return false;
     }
@@ -356,6 +423,14 @@
 
     $('body').removeClass('is-reveal-open').attr({'aria-hidden': false, 'tabindex': ''});
 
+    /**
+    * Resets the modal content
+    * This prevents a running video to keep going in the background
+    */
+    if(this.options.resetOnClose) {
+      this.$element.html(this.$element.html());
+    }
+
     this.isActive = false;
     this.$element.attr({'aria-hidden': true})
     /**
@@ -364,36 +439,33 @@
      */
                  .trigger('closed.zf.reveal');
   };
-
+  /**
+   * Toggles the open/closed state of a modal.
+   * @function
+   */
   Reveal.prototype.toggle = function(){
     if(this.isActive){
-      this._close();
+      this.close();
     }else{
-      this._open();
+      this.open();
     }
   };
 
   /**
    * Destroys an instance of a modal.
-   * @fires Reveal#destroyed
+   * @function
    */
   Reveal.prototype.destroy = function() {
     if(this.options.overlay){
-      this.$overlay.hide().off();
+      this.$overlay.hide().off().remove();
     }
     this.$element.hide();
     this.$anchor.off();
 
     Foundation.unregisterPlugin(this);
-
-    /**
-     * Fires when the plugin has been destroyed.
-     * @event Reveal#destroyed
-     */
-    // this.$element.trigger('destroyed.zf.reveal');
   };
 
-  Foundation.plugin(Reveal);
+  Foundation.plugin(Reveal, 'Reveal');
 
   // Exports for AMD/Browserify
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')

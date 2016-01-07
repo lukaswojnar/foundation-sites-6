@@ -12,17 +12,18 @@ Once you have the files, add links to jQuery and Foundation as `<script>` tags a
 ```html
 <script src="js/jquery.min.js"></script>
 <script src="js/foundation.min.js"></script>
+<script src="js/foundation.util.mediaQuery.js"></script>
 ```
 
 <div class="callout warning">
-  <p>Make sure Foundation loads <em>after</em> jQuery.</p>
+  <p>Make sure Foundation loads <em>after</em> jQuery, and make sure to include the media query utils.</p>
 </div>
 
 ### File Structure
 
 All of Foundation's plugins ship as individual files, named `foundation.tabs.js`, `foundation.accordion.js`, and so on. These files are also combined into one big file called `foundation.js`, which allows you to get every plugin at once.
 
-If you're only using certain plugins, know that they all require `foundation.core.js` to be loaded *first*. Some plugins also require specific utility libraries that ship with Foundation&mdash;refer to a plugin's documentation to find out which plugins require what.
+If you're only using certain plugins, know that they all require `foundation.core.js` to be loaded *first*. Some plugins also require specific utility libraries that ship with Foundation&mdash;refer to a plugin's documentation to find out which plugins require what, and see the [JavaScript Utilities](javascript-utilities.html) page for more information.
 
 ```html
 <!-- Example of selectively including files -->
@@ -75,13 +76,13 @@ Foundation.Accordion.defaults.multiExpand = true;
 
 An individual instance of a plugin can also have different settings. These can be set in the HTML or in JavaScript.
 
-In the HTML, each setting can be defined as an individual data attribute.
+In the HTML, each setting can be defined as an individual data attribute. Note that camelCased options are converted to hyphenated words. In the below example, `multiExpand` becomes `data-multi-expand`.
 
 ```html
-<div data-accordion data-slidespeed="500" data-multiexpand="true"></div>
+<div data-accordion data-slide-speed="500" data-multi-expand="true"></div>
 ```
 
-If that's too many attributes for you, they can be combined into one called `data-options`. Write the options as JavaScript-style key-value pairs, separated by semicolons.
+Data options can also be set in bulk on one attribute, `data-options`. Options are written with the format `key: value`, with a semicolon separating each option. The above example can be written using `data-options` like so:
 
 ```html
 <div data-accordion data-options="slideSpeed: 500; multiExpand: true"></div>
@@ -112,9 +113,17 @@ var $accordion = new Foundation.Accordion($('#accordion'), {
 });
 ```
 
-Most plugins have a public API that allows you to manipulate it through JavaScript. Refer to a plugin's documentation to learn how it works.
+Most plugins have a public API that allows you to manipulate it through JavaScript. Refer to a plugin's documentation to learn what functions are available. Invoking methods is easy as pie:
 
-<!-- TODO: add plugin API example -->
+```js
+$('#reveal').foundation('open'); //will open a Reveal modal with id `reveal`.
+
+$('[data-tabs]').eq(0).foundation('selectTab', $('#example')); //will change the first Tabs on the page to whatever panel you choose.
+
+$('.tooltip').foundation('destroy'); //will destroy all Tooltips on the page.
+
+```
+You can use any jQuery selector you like, and if the selector encompasses multiple plugins, they will all have the same the chosen method invoked. You pass arguments just like you would any in other JavaScript `function(comma, delimited, so, easy)`. We did make an effort to reduce the number of public methods that require arguments, but check the plugin's page to see if it requires additional information.
 
 <div class="callout warning">
   <p>Plugin methods prefixed with an underscore are considered part of the internal API, which means they could change, break, or disappear without warning. We recommend sticking to only the public API, which is documented on each plugin's page.</p>
@@ -127,7 +136,7 @@ Most plugins have a public API that allows you to manipulate it through JavaScri
 Every plugin fires DOM events when certain functions finish. For example, you can listen for when tabs change, or an off-canvas menu opens, and create a callback to respond to it.
 
 ```js
-$('#tab').on('changed.zf.tabs', function() {
+$('[data-tabs]').on('change.zf.tabs', function() {
   console.log('Those tabs sure did change!');
 });
 ```
@@ -137,9 +146,3 @@ Refer to each plugin's documentation to see a list of events it fires, and when 
 <div class="callout warning">
   <p>Starting with Foundation 6, we removed callbacks as plugin settings. All use of callbacks with plugins should be done as event listeners.</p>
 </div>
-
----
-
-## Module Loader Support
-
-<!-- TODO: JS module loader docs -->

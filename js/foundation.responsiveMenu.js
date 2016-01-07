@@ -26,12 +26,6 @@
     }
   };
 
-  // [PH] Media queries
-  var phMedia = {
-    small: '(min-width: 0px)',
-    medium: '(min-width: 640px)'
-  };
-
   /**
    * Creates a new instance of a responsive menu.
    * @class
@@ -48,12 +42,7 @@
     this._init();
     this._events();
 
-    Foundation.registerPlugin(this);
-    // /**
-    //  * Fires when the plugin has been successfuly initialized.
-    //  * @event ResponsiveMenu#init
-    //  */
-    //  this.$element.trigger('init.zf.ResponsiveMenu');
+    Foundation.registerPlugin(this, 'ResponsiveMenu');
   }
 
   ResponsiveMenu.defaults = {};
@@ -134,7 +123,6 @@
     // Create an instance of the new plugin
     if (this.currentPlugin) this.currentPlugin.destroy();
     this.currentPlugin = new this.rules[matchedMq].plugin(this.$element, {});
-    console.log(this.currentPlugin);
   };
 
   /**
@@ -144,8 +132,8 @@
   ResponsiveMenu.prototype.destroy = function() {
     this.currentPlugin.destroy();
     $(window).off('.zf.ResponsiveMenu');
+    Foundation.unregisterPlugin(this);
   };
-  // ResponsiveMenu.prototype.DropdownMenu = Foundation.DropdownMenu;
-  Foundation.plugin(ResponsiveMenu);
+  Foundation.plugin(ResponsiveMenu, 'ResponsiveMenu');
 
-}(Foundation, jQuery)
+}(Foundation, jQuery);

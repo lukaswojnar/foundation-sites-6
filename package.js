@@ -1,23 +1,27 @@
 Package.describe({
   name: 'zurb:foundation-sites',
-  summary: 'The most advanced responsive front-end framework in the world.',
-  version: '6.0.0-alpha.1',
-  git: 'https://github.com/zurb/foundation.git'
+  summary: 'Foundation 6 - The most advanced responsive front-end framework in the world.',
+  version: '6.1.1',
+  git: 'https://github.com/zurb/foundation-sites.git',
+  documentation: 'meteor-README.md'
+});
+
+Npm.depends({
+  'motion-ui': '1.1.0'
 });
 
 Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.imply('fourseven:scss@3.4.1');
-  api.use(['ecmascript', 'jquery@1.11.4', 'fourseven:scss@3.4.1'], 'client');
+  api.use(['ecmascript', 'jquery', 'fourseven:scss@3.4.1'], 'client');
+  api.addFiles('.npm/package/node_modules/motion-ui/dist/motion-ui.css', 'client');
+  api.addFiles('.npm/package/node_modules/motion-ui/dist/motion-ui.js', 'client');
+  api.addFiles('dist/foundation.js', 'client');
   api.addFiles([
-    'dist/foundation.css',
-    'dist/foundation.min.css',
-    'dist/foundation.js',
-    'dist/foundation.min.js',
 
     'scss/foundation.scss',
     'scss/_global.scss',
-    'scss/_settings.scss',
+    'scss/settings/_settings.scss',
 
     'scss/components/_accordion-menu.scss',
     'scss/components/_accordion.scss',
@@ -32,7 +36,6 @@ Package.onUse(function(api) {
     'scss/components/_dropdown.scss',
     'scss/components/_flex-video.scss',
     'scss/components/_float.scss',
-    'scss/components/_joyride.scss',
     'scss/components/_label.scss',
     'scss/components/_media-object.scss',
     'scss/components/_menu.scss',
@@ -84,8 +87,7 @@ Package.onUse(function(api) {
     'scss/util/_selector.scss',
     'scss/util/_unit.scss',
     'scss/util/_util.scss',
-    'scss/util/_value.scss',
-
-    'scss/vendor/normalize.scss',
-  ], 'client');
+    'scss/util/_value.scss'
+    
+  ], 'client', {isImport: true});
 });

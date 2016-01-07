@@ -22,17 +22,17 @@
     this._init();
     this._events();
 
-    Foundation.registerPlugin(this);
-    // /**
-    //  * Fires when the plugin has been successfuly initialized.
-    //  * @event Toggler#init
-    //  */
-    // this.$element.trigger('init.zf.toggler');
+    Foundation.registerPlugin(this, 'Toggler');
   }
 
   Toggler.defaults = {
+    /**
+     * Tells the plugin if the element should animated when toggled.
+     * @option
+     * @example false
+     */
     animate: false
-  }
+  };
 
   /**
    * Initializes the Toggler plugin by parsing the toggle class from data-toggler, or animation classes from data-animate.
@@ -40,35 +40,27 @@
    * @private
    */
   Toggler.prototype._init = function() {
+    var input;
     // Parse animation classes if they were set
     if (this.options.animate) {
-      var input = this.options.animate.split(' ');
+      input = this.options.animate.split(' ');
 
       this.animationIn = input[0];
       this.animationOut = input[1] || null;
     }
     // Otherwise, parse toggle class
     else {
-      var input = this.$element.data('toggler');
-
+      input = this.$element.data('toggler');
       // Allow for a . at the beginning of the string
-      if (input[0] === '.') {
-        this.className = input.slice(1);
-      }
-      else {
-        this.className = input;
-      }
+      this.className = input[0] === '.' ? input.slice(1) : input;
     }
 
     // Add ARIA attributes to triggers
     var id = this.$element[0].id;
     $('[data-open="'+id+'"], [data-close="'+id+'"], [data-toggle="'+id+'"]')
       .attr('aria-controls', id);
-
     // If the target is hidden, add aria-hidden
-    if (this.$element.is(':hidden')) {
-      this.$element.attr('aria-expanded', 'false');
-    }
+    this.$element.attr('aria-expanded', this.$element.is(':hidden') ? false : true);
   };
 
   /**
@@ -77,12 +69,7 @@
    * @private
    */
   Toggler.prototype._events = function() {
-    var _this = this;
-
-    this.$element.on('toggle.zf.trigger', function() {
-      _this.toggle();
-      return false;
-    });
+    this.$element.off('toggle.zf.trigger').on('toggle.zf.trigger', this.toggle.bind(this));
   };
 
   /**
@@ -92,19 +79,14 @@
    * @fires Toggler#off
    */
   Toggler.prototype.toggle = function() {
-    if (!this.options.animate) {
-      this._toggleClass();
-    }
-    else {
-      this._toggleAnimate();
-    }
+    this[ this.options.animate ? '_toggleAnimate' : '_toggleClass']();
   };
 
   Toggler.prototype._toggleClass = function() {
-    var _this = this;
     this.$element.toggleClass(this.className);
 
-    if (this.$element.hasClass(this.className)) {
+    var isOn = this.$element.hasClass(this.className);
+    if (isOn) {
       /**
        * Fires if the target element has the class after a toggle.
        * @event Toggler#on
@@ -119,8 +101,8 @@
       this.$element.trigger('off.zf.toggler');
     }
 
-    _this._updateARIA();
-  }
+    this._updateARIA(isOn);
+  };
 
   Toggler.prototype._toggleAnimate = function() {
     var _this = this;
@@ -128,25 +110,20 @@
     if (this.$element.is(':hidden')) {
       Foundation.Motion.animateIn(this.$element, this.animationIn, function() {
         this.trigger('on.zf.toggler');
-        _this._updateARIA();
+        _this._updateARIA(true);
       });
     }
     else {
       Foundation.Motion.animateOut(this.$element, this.animationOut, function() {
         this.trigger('off.zf.toggler');
-        _this._updateARIA();
+        _this._updateARIA(false);
       });
     }
-  }
+  };
 
-  Toggler.prototype._updateARIA = function() {
-    if (this.$element.is(':hidden')) {
-      this.$element.attr('aria-expanded', 'false');
-    }
-    else {
-      this.$element.attr('aria-expanded', 'true');
-    }
-  }
+  Toggler.prototype._updateARIA = function(isOn) {
+    this.$element.attr('aria-expanded', isOn ? true : false);
+  };
 
   /**
    * Destroys the instance of Toggler on the element.
@@ -154,9 +131,10 @@
    */
   Toggler.prototype.destroy= function() {
     this.$element.off('.zf.toggler');
+    Foundation.unregisterPlugin(this);
   };
 
-  Foundation.plugin(Toggler);
+  Foundation.plugin(Toggler, 'Toggler');
 
   // Exports for AMD/Browserify
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')

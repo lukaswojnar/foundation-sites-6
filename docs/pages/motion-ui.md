@@ -66,6 +66,14 @@ Finally, import the library into your Sass file.
 @import 'motion-ui'
 ```
 
+Or, another way to start using Motion UI is through a CDN.
+
+```html
+<!-- Insert this within your head tag and after foundation.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.1.1/motion-ui.min.css" />
+
+```
+
 ---
 
 ## Built-in Transitions
@@ -147,12 +155,12 @@ You can use the same five transition effects to create CSS animations as well. T
 <button type="button" class="button" data-docs-example-series>Play Animation</button>
 <div class="row" id="series-example">
   <div class="small-4 columns">
-    <img src="//placekitten.com/101/101" class="thumbnail" id="series-example-1">
+    <img class="thumbnail" src= "assets/img/square-1.jpg" id="series-example-1">
   </div>
   <div class="small-4 columns">
-    <img src="//placekitten.com/101/101" class="thumbnail" id="series-example-2">
+    <img class="thumbnail" src= "assets/img/square-2.jpg" id="series-example-2">
   </div>
   <div class="small-4 columns">
-    <img src="//placekitten.com/101/101" class="thumbnail" id="series-example-3">
+    <img class="thumbnail" src= "assets/img/square-3.jpg" id="series-example-3">
   </div>
 </div>

@@ -58,6 +58,7 @@ $slider-transition: all 0.2s ease-in-out !default;
   background-color: $slider-background;
   cursor: pointer;
   user-select: none;
+  touch-action: none;
 }
 
 /// Adds the general styles for active fill for sliders.
@@ -79,7 +80,7 @@ $slider-transition: all 0.2s ease-in-out !default;
 /// Adds the general styles for the slider handles.
 @mixin slider-handle {
   @include disable-mouse-outline;
-  @include v-align-middle;
+  @include vertical-center;
   position: absolute;
   left: 0;
   z-index: 1;
@@ -153,5 +154,10 @@ $slider-transition: all 0.2s ease-in-out !default;
   // Vertical slider
   .slider.vertical {
     @include slider-vertical;
+  }
+
+  // RTL support
+  html[dir="rtl"] .slider:not(.vertical){
+    transform: scale(-1, 1);
   }
 }
